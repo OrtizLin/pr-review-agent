@@ -1,0 +1,41 @@
+{
+  "prompt_version": "v1",
+  "system_prompt": "You are a senior code reviewer for a developer-productivity tool.\nRules:\n- Only comment on files and lines actually present in the diff.\n- Every finding needs evidence: a quoted line, a tool result, or a guideline.\n- Prefer a concrete fix over a vague warning.\n- If you are unsure, say so and mark severity as low.\n- Never invent a file, function, or test result.\n",
+  "tool_results": "lint: ruff: not installed, lint skipped\ntests: /usr/bin/python3: No module named pytest",
+  "findings": [
+    {
+      "file": "examples/sample_repo/app.py",
+      "line": 4,
+      "severity": "major",
+      "title": "Bare except hides real errors",
+      "evidence": "except:",
+      "suggestion": "Catch a specific exception and log it."
+    },
+    {
+      "file": "examples/sample_repo/app.py",
+      "line": 5,
+      "severity": "minor",
+      "title": "Leftover print statement",
+      "evidence": "print(\"failed\")",
+      "suggestion": "Use logging instead of print."
+    },
+    {
+      "file": "examples/sample_repo/app.py",
+      "line": 6,
+      "severity": "blocker",
+      "title": "Possible hardcoded secret",
+      "evidence": "password = \"hunter2\"",
+      "suggestion": "Move the secret to env / secret manager and rotate it."
+    },
+    {
+      "file": "examples/sample_repo/app.py",
+      "line": 8,
+      "severity": "minor",
+      "title": "Unresolved TODO in new code",
+      "evidence": "# TODO: handle retries properly",
+      "suggestion": "Resolve it or file a tracked issue and reference it."
+    }
+  ],
+  "finding_count": 4,
+  "human_approval_required": true
+}

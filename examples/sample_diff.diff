@@ -1,0 +1,14 @@
+diff --git a/examples/sample_repo/app.py b/examples/sample_repo/app.py
+index 0000000..1111111 100644
+--- a/examples/sample_repo/app.py
++++ b/examples/sample_repo/app.py
+@@ -1,3 +1,8 @@
+ def load_user(user_id):
+-    return fetch(user_id)
++    try:
++        return fetch(user_id)
++    except:
++        print("failed")
++        password = "hunter2"
++        return None
++# TODO: handle retries properly

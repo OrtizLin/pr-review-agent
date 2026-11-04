@@ -1,0 +1,245 @@
+[
+  {
+    "id": "bare-except-basic",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    do()\n+except:\n+    pass\n",
+    "expected_titles": [
+      "Bare except hides real errors"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "bare-except-nested",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+def f():\n+    try:\n+        x()\n+    except:\n+        return None\n",
+    "expected_titles": [
+      "Bare except hides real errors"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "bare-except-with-log",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except:\n+    log('err')\n",
+    "expected_titles": [
+      "Bare except hides real errors"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "print-debug",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+def f():\n+    print(x)\n",
+    "expected_titles": [
+      "Leftover print statement"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "print-in-loop",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+for i in xs:\n+    print(i)\n",
+    "expected_titles": [
+      "Leftover print statement"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "print-error-path",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except ValueError:\n+    print('failed')\n",
+    "expected_titles": [
+      "Leftover print statement"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "todo-feature",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+# TODO: add caching\n",
+    "expected_titles": [
+      "Unresolved TODO in new code"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "todo-refactor",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+# TODO: refactor this helper\n",
+    "expected_titles": [
+      "Unresolved TODO in new code"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "todo-issue",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+# TODO: handle retries properly\n",
+    "expected_titles": [
+      "Unresolved TODO in new code"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "password-hardcoded",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+password = \"hunter2\"\n",
+    "expected_titles": [
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "password-empty",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+password = \"\"\n",
+    "expected_titles": [
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "password-with-comment",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+password = \"x\"  # temp\n",
+    "expected_titles": [
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "combined-bare-print-todo",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except:\n+    print('err')\n+# TODO: fix\n",
+    "expected_titles": [
+      "Bare except hides real errors",
+      "Leftover print statement",
+      "Unresolved TODO in new code"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "combined-password-bare",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except:\n+    pass\n+password = \"x\"\n",
+    "expected_titles": [
+      "Bare except hides real errors",
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "clean-logging",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+import logging\n+try:\n+    x()\n+except ValueError:\n+    logging.warning('bad input')\n",
+    "expected_titles": [],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "clean-specific-except",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except KeyError:\n+    return None\n",
+    "expected_titles": [],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "clean-function",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+def add(a, b):\n+    return a + b\n",
+    "expected_titles": [],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "clean-docstring",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+\"\"\"Return the total.\"\"\"\n+def total(xs):\n+    return sum(xs)\n",
+    "expected_titles": [],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "multi-file-bare-and-print",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except:\n+    pass\ndiff --git a/b.py b/b.py\n--- a/b.py\n+++ b/b.py\n@@ -1 +1 @@\n+print(x)\n",
+    "expected_titles": [
+      "Bare except hides real errors",
+      "Leftover print statement"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "multi-file-password-and-todo",
+    "diff": "diff --git a/b.py b/b.py\n--- a/b.py\n+++ b/b.py\n@@ -1 +1 @@\n+password = \"x\"\n",
+    "expected_titles": [
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  },
+  {
+    "id": "severity-password-blocker",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+password = \"x\"\n",
+    "expected_titles": [
+      "Possible hardcoded secret"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ],
+    "expected_severities": {
+      "Possible hardcoded secret": "blocker"
+    }
+  },
+  {
+    "id": "severity-bare-major",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+try:\n+    x()\n+except:\n+    pass\n",
+    "expected_titles": [
+      "Bare except hides real errors"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ],
+    "expected_severities": {
+      "Bare except hides real errors": "major"
+    }
+  },
+  {
+    "id": "severity-print-minor",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+print(x)\n",
+    "expected_titles": [
+      "Leftover print statement"
+    ],
+    "forbidden_files": [
+      "nope.py"
+    ],
+    "expected_severities": {
+      "Leftover print statement": "minor"
+    }
+  },
+  {
+    "id": "clean-diff",
+    "diff": "diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n+x = 2\n",
+    "expected_titles": [],
+    "forbidden_files": [
+      "nope.py"
+    ]
+  }
+]

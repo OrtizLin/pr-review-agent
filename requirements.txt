@@ -1,0 +1,4 @@
+# Runtime has no hard dependencies on purpose: the dry-run path is offline.
+# Dev / test only:
+pytest>=8
+ruff>=0.6
