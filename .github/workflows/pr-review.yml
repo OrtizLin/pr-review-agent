@@ -1,0 +1,53 @@
+# PR Review comment action (v1).
+#
+# What it does: on a pull request, run the dry-run reviewer on the
+# PR diff (base...head) and post the Markdown report as a PR comment.
+#
+# What it deliberately does NOT do: merge, push, approve, request
+# changes, or modify any code. A human still decides after reading
+# the report and the diff. No API key is needed: dry-run is offline
+# (TF-IDF guideline retrieval when no key is set).
+#
+# Limitations of v1, stated plainly:
+# - Each run posts a NEW comment; it does not update or delete a
+#   previous comment from an earlier push to the same PR.
+# - It runs on pull_request events from the repo itself. For forks,
+#   GitHub's pull_request_target / approval rules may apply; this
+#   workflow does not request any extra permissions to work around
+#   that, and it does not use secrets.
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Run PR review (dry-run, offline)
+        run: |
+          python -m pr_review_agent.cli \
+            --repo . \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --out-md pr-review-report.md \
+            --out-json pr-review-report.json
+      - name: Post report as a PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body-file pr-review-report.md

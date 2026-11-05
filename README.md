@@ -108,12 +108,36 @@ key is set; the retriever actually used is stated in the output.
 Set `RETRIEVER=tfidf` to force TF-IDF, or `RETRIEVER=embedding`
 to force embedding (which errors clearly with no key).
 
+## Evaluation: development set vs held-out set
+
+- Development set: `eval/run_eval.py` scores 24/24 cases in
+  `eval/cases.json`. These cases were used while building the tool.
+- Held-out set: `eval/run_heldout.py` scores 12/12 cases in
+  `eval/heldout_cases.json`. These cases were written afterwards,
+  with different scenarios (including needles that appear only in
+  context lines or removed lines, which must NOT be flagged), and
+  were not used to tune rules or prompts. Report the two scores
+  separately; do not merge the held-out cases into the development
+  set, and do not change code to make a failing held-out case pass
+  without saying so, or the held-out score stops meaning anything.
+
+## PR review comment action
+
+`.github/workflows/pr-review.yml` runs on pull requests: it runs
+the dry-run reviewer on the PR diff (base...head) and posts the
+Markdown report as a PR comment with `gh pr comment`. Permissions
+are only `contents: read` and `pull-requests: write`. It does not
+merge, approve, request changes, or modify code. V1 posts a new
+comment on every run; it does not update a previous comment.
+The workflow file is YAML-valid and the CLI command it runs was
+simulated locally on a test repo (2 findings, correct files and
+lines), but the action itself has NOT yet been verified by a real
+test PR on GitHub — that step still needs a push and a test PR.
+
 ## What is intentionally not here yet
 
 - No auto-merge, no auto-push, no direct write to a repo. The agent
   reports; a human decides.
-- No held-out eval set yet. The 24 cases are the development set; keep
-  a separate held-out set before claiming a general accuracy number.
 - No model vendor is hard-coded. The LLM boundary is one function.
 
 ## Mapping to the target role
