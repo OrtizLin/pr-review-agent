@@ -93,10 +93,20 @@ held out.
 Retrieval comparison (4 queries, 5 guideline lines): the old
 keyword/full-file method returned the whole file every time. TF-IDF
 retrieval in `pr_review_agent/retrieval.py` gets top-1 correct on 4/4
-queries; see `eval/retrieval_comparison.md`. TF-IDF is a local,
-dependency-free retriever, not a model embedding yet — the interface
-(`retrieve_top(documents, query, top_k)`) is what a model embedding
-would replace, with this same comparison to beat.
+queries; see `eval/retrieval_comparison.md`. A model-embedding
+retriever is now implemented in the same shape
+(`EmbeddingRetriever`, `pr_review_agent/embeddings.py`, OpenAI-compatible
+`/embeddings`, Gemini preset `gemini-embedding-001` — not the retired
+`text-embedding-004`, which returns HTTP 404 on the v1beta
+OpenAI-compatible path). Verified 2026-11-05 against a real model:
+TF-IDF scored 4/4 on the original queries and 2/5 on the paraphrase
+queries; embedding (`gemini-embedding-001`) scored 4/4 and 5/5.
+Under the pre-stated rule (beat TF-IDF on paraphrases without
+losing on originals), embedding is now the default when an
+embedding key is set, and TF-IDF is the offline fallback when no
+key is set; the retriever actually used is stated in the output.
+Set `RETRIEVER=tfidf` to force TF-IDF, or `RETRIEVER=embedding`
+to force embedding (which errors clearly with no key).
 
 ## What is intentionally not here yet
 

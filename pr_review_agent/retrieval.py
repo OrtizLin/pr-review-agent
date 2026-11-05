@@ -54,3 +54,44 @@ class TfidfRetriever:
 
 def retrieve_top(documents: list[str], query: str, top_k: int = 3) -> list[tuple[str, float]]:
     return TfidfRetriever(documents).retrieve_top(query, top_k=top_k)
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = math.sqrt(sum(x * x for x in a)) or 1.0
+    norm_b = math.sqrt(sum(y * y for y in b)) or 1.0
+    return dot / (norm_a * norm_b)
+
+
+class EmbeddingRetriever:
+    """Model-embedding retriever with the same output shape as TF-IDF.
+
+    Takes an embed function (texts -> vectors) so tests can pass a
+    stub and production can pass embeddings.embed_texts. Documents
+    are embedded once per instance; the query is embedded per call.
+    No fallback to TF-IDF happens inside this class: if embedding
+    fails, the caller sees the error instead of a silently different
+    retriever.
+    """
+
+    def __init__(self, documents: list[str], embed):
+        self.documents = documents
+        self._embed = embed
+        self._doc_vectors = embed(documents) if documents else []
+
+    def retrieve_top(self, query: str, top_k: int = 3) -> list[tuple[str, float]]:
+        if not self.documents:
+            return []
+        # Embed only the query here; document vectors are reused
+        # from __init__, not re-embedded on every call.
+        query_vector = self._embed([query])[0]
+        scored = [
+            (doc, round(_cosine(query_vector, vec), 4))
+            for doc, vec in zip(self.documents, self._doc_vectors)
+        ]
+        scored.sort(key=lambda pair: pair[1], reverse=True)
+        return scored[:top_k]
+
+
+def retrieve_top_embedding(documents: list[str], query: str, embed, top_k: int = 3) -> list[tuple[str, float]]:
+    return EmbeddingRetriever(documents, embed).retrieve_top(query, top_k=top_k)

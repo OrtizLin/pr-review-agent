@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
 
 from .config import Config
-from .retrieval import retrieve_top
+from .retrieval import retrieve_top, retrieve_top_embedding
 
 
 def run_lint(repo_root: Path) -> str:
@@ -65,12 +66,18 @@ def search_codebase(repo_root: Path, pattern: str) -> list[str]:
 
 
 def retrieve_guidelines(config: Config, diff_text: str) -> str:
-    """RAG: TF-IDF retrieval over docs/guidelines.md.
+    """RAG retrieval over docs/guidelines.md.
 
-    Returns the top 3 guideline lines for the diff. If nothing scores
-    above zero, fall back to the full short file rather than silently
-    dropping a rule. See eval/compare_retrieval.py for the comparison
-    against the old keyword/full-file method.
+    Default retriever, after the 2026-11-05 comparison (TF-IDF 4/4
+    original + 2/5 paraphrase; embedding 4/4 original + 5/5
+    paraphrase, gemini-embedding-001): embedding when an embedding
+    key is set, otherwise TF-IDF. The choice is stated in the
+    returned text, so it is never a silent fallback. Set
+    RETRIEVER=embedding to force embedding (raises a clear error
+    with no key) or RETRIEVER=tfidf to force TF-IDF offline.
+    Returns the top 3 guideline lines for the diff. If nothing
+    scores above zero, fall back to the full short file rather
+    than silently dropping a rule.
     """
     guidelines_file = config.guidelines_dir / "guidelines.md"
     if not guidelines_file.exists():
@@ -79,7 +86,22 @@ def retrieve_guidelines(config: Config, diff_text: str) -> str:
     lines = [line.strip() for line in text.splitlines() if line.strip().startswith("-")]
     if not lines:
         return text
-    top = retrieve_top(lines, diff_text, top_k=3)
+    requested = os.environ.get("RETRIEVER", "").strip().lower()
+    if requested == "embedding":
+        retriever_name = "embedding"
+    elif requested == "tfidf":
+        retriever_name = "tfidf"
+    elif os.environ.get("EMBEDDING_API_KEY") or os.environ.get("LLM_API_KEY"):
+        retriever_name = "embedding"
+    else:
+        retriever_name = "tfidf"
+    if retriever_name == "embedding":
+        from .embeddings import embed_texts
+
+        top = retrieve_top_embedding(lines, diff_text, embed_texts, top_k=3)
+    else:
+        top = retrieve_top(lines, diff_text, top_k=3)
     if not top or top[0][1] <= 0:
         return text
-    return "\n".join(f"- {line} (score {score})" for line, score in top)
+    header = f"Retriever: {retriever_name}"
+    return header + "\n" + "\n".join(f"- {line} (score {score})" for line, score in top)
